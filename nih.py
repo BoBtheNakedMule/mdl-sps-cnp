@@ -73,11 +73,19 @@ def create_table(rows, table_title):
     run.bold = True
     #document.add_heading(table_title, level=1) to remove
     table = document.add_table(rows=1, cols=2)
+    table
     table.autofit = True
     table.style = 'Plain Table 4'
     #Set the width of the left column to 25%
-    table.columns[0].width = Inches(.1)
+    table.columns[0].width = Inches(1.5)
+    table.columns[0].cells[0]._element.tcPr.tcW.type = 'pct'
+    table.columns[0].cells[0]._element.tcPr.tcW.w = 1250  # 25% of 5000
     table.columns[1].width = Inches(8)
+
+    # Set the preferred width of the right column to 75%
+    table.columns[1].width = Inches(4.5)
+    table.columns[1].cells[0]._element.tcPr.tcW.type = 'pct'
+    table.columns[1].cells[0]._element.tcPr.tcW.w = 3750  # 75% of 5000
 
     for row in table.rows:
         for cell in row.cells:
