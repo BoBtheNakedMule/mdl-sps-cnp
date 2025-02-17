@@ -75,6 +75,10 @@ def create_table(rows, table_title):
     table = document.add_table(rows=1, cols=2)
     table.autofit = True
     table.style = 'Plain Table 4'
+    #Set the width of the left column to 25%
+    table.columns[0].width = Inches(.1)
+    table.columns[1].width = Inches(8)
+
     for row in table.rows:
         for cell in row.cells:
             for paragraph in cell.paragraphs:
