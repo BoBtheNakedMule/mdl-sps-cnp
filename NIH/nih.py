@@ -159,10 +159,12 @@ def create_table(rows, table_title):
         cells[1].text = str(row[17]) if row[17] is not None else ''
         set_font(cells[0].paragraphs[0], is_left_column=True)
         set_font(cells[1].paragraphs[0])
-
+        #funding column
         cells = table.add_row().cells
         cells[0].text = 'Funding'
-        cells[1].text = str(row[18]) if row[18] is not None else ''
+        #will probably need some number handling here
+        funding_float = float(str(row[18]) if row[18] is not None else '')
+        cells[1].text = f'${funding_float:,.2f}'
         set_font(cells[0].paragraphs[0], is_left_column=True)
         set_font(cells[1].paragraphs[0])
 
