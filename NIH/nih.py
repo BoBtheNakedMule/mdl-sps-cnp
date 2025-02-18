@@ -113,25 +113,27 @@ def create_table(rows, table_title):
         set_font(cells[1].paragraphs[0])
         if is_bold:
             cells[1].paragraphs[0].runs[0].bold = True 
-
-    #handles currency formatting for funding
-    def currency_formatting(funding_column):  
+    
+    #formats funding amount with dollar sign and two decimals. Handles error if the funding column has text
+    def currency_formatting(funding_column):
         try:
             funding_float = float(funding_column if funding_column is not None else '')
             funding_text = f'${funding_float:,.2f}'
             return funding_text
         except ValueError:
-            print(f"The Funding Number is NOT text and says {funding_column}.\nEnter a number with no commas or $.")
+            print(f"The Funding Number is NOT text and says {funding_column}.\n Edit the Word file after saving or fix the Excel file and run this script again.")
             funding_text  = '**** Incorrect Entry- Must be in format of ####.## ****'
             return funding_text
-    #handles concat of the mini year/pm headers above the effort   
+        
+
+    #concacts mini headings over yearly effort    
     def person_month_formatting(effort_column):
         person_month_text = "Year  Person Months (##.##)\n"  + str(effort_column if effort_column is not None else '')
         return person_month_text
 
-        
+
     for row in rows:
-        #add table rows 
+            
         add_table_row(table, 'Title:', row[1])
         add_table_row(table, 'Major Goals:', row[4])
         add_table_row(table, 'Status of Support:', row[25], is_bold=True)
@@ -186,8 +188,8 @@ save_path = save_file_dialog()
 try:
     document.save(save_path)
     print(f"Data has been exported to {save_path}")
-    input("Press Enter to continue...")
-    exit()
+    os.system('pause')
+   
 except PermissionError:
 
     print("ERROR: File is open, close the file and try again")
