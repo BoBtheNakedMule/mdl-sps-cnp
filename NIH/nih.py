@@ -1,4 +1,4 @@
-#.venv\Current and Pending - General Template - PERA T13_54_35.xlsx
+#pyinstaller .venv\nih.py --onefile
 import openpyxl
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor
@@ -7,6 +7,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.text import WD_LINE_SPACING
 import tkinter as tk
 from tkinter import filedialog
+import sys
 
 
 def open_file_dialog():
@@ -163,8 +164,14 @@ def create_table(rows, table_title):
         cells = table.add_row().cells
         cells[0].text = 'Funding'
         #will probably need some number handling here
-        funding_float = float(str(row[18]) if row[18] is not None else '')
-        cells[1].text = f'${funding_float:,.2f}'
+        try:
+            funding_float = float(str(row[18]) if row[18] is not None else '')        
+            cells[1].text = f'${funding_float:,.2f}'
+        except ValueError:
+            print(f"The Funding Number for {row[1]} is NOT text and says {row[18]}.\nEnter a number with no commas or $.")
+            
+            cells[1].text = '**** Incorrect Entry- Must be in format of ####.## ****'
+
         set_font(cells[0].paragraphs[0], is_left_column=True)
         set_font(cells[1].paragraphs[0])
 
@@ -195,7 +202,6 @@ for row in sheet.iter_rows(min_row=41, values_only=True):
 
 # Create tables
 create_table(current_projects, 'Awarded Projects')
-document.add_page_break()
 create_table(pending_projects, 'Pending Projects')
 
 #add page break before In-Kind
@@ -216,6 +222,13 @@ document.add_paragraph("Date: ")
 
 # Save the Word document
 save_path = save_file_dialog()
-document.save(save_path)
+try:
+    document.save(save_path)
+    print(f"Data has been exported to {save_path}")
+    input("Press Enter to continue...")
+    sys.exit()
+except PermissionError:
+    print("ERROR: File is open, close the file and try again")
+    input("Press Enter to continue...")
+    sys.exit(1)
 
-print(f"Data has been exported to {save_path}")
