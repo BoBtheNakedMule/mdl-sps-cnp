@@ -7,7 +7,8 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.text import WD_LINE_SPACING
 import tkinter as tk
 from tkinter import filedialog
-import sys
+import os
+
 
 
 def open_file_dialog():
@@ -226,9 +227,10 @@ try:
     document.save(save_path)
     print(f"Data has been exported to {save_path}")
     input("Press Enter to continue...")
-    sys.exit()
+    exit()
 except PermissionError:
+
     print("ERROR: File is open, close the file and try again")
-    input("Press Enter to continue...")
-    sys.exit(1)
+    os.system('pause')
+    
 
