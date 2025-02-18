@@ -104,85 +104,47 @@ def create_table(rows, table_title):
             run.font.size = Pt(10)
             if is_left_column:
                 run.bold = True
+
+    def add_table_row(table, label, value, is_bold=False):
+        cells = table.add_row().cells
+        cells[0].text = label
+        cells[1].text = str(value) if value is not None else ''
+        set_font(cells[0].paragraphs[0], is_left_column=True)
+        set_font(cells[1].paragraphs[0])
+        if is_bold:
+            cells[1].paragraphs[0].runs[0].bold = True 
     
-    for row in rows:
-        cells = table.add_row().cells
-        cells[0].text = 'Title:'
-        cells[1].text = str(row[1]) if row[1] is not None else ''
-        set_font(cells[0].paragraphs[0], is_left_column=True)
-        set_font(cells[1].paragraphs[0])
-        
-        cells = table.add_row().cells
-        cells[0].text = 'Major Goals:'
-        cells[1].text = str(row[4]) if row[4] is not None else ''
-        set_font(cells[0].paragraphs[0], is_left_column=True)
-        set_font(cells[1].paragraphs[0])
-        
-        cells = table.add_row().cells
-        cells[0].text = 'Status of Support:'
-        status_text = str(row[25]) if row[25] is not None else ''
-        cells[1].text = status_text
-        set_font(cells[0].paragraphs[0], is_left_column=True)
-        set_font(cells[1].paragraphs[0])
-        cells[1].paragraphs[0].runs[0].bold = True
-
-        cells = table.add_row().cells
-        cells[0].text = 'Project Number:'
-        cells[1].text = str(row[26]) if row[26] is not None else ''
-        set_font(cells[0].paragraphs[0], is_left_column=True)
-        set_font(cells[1].paragraphs[0])
-
-        cells = table.add_row().cells
-        cells[0].text = 'Name of PD/PI:'
-        cells[1].text = str(row[13]) if row[13] is not None else ''
-        set_font(cells[0].paragraphs[0], is_left_column=True)
-        set_font(cells[1].paragraphs[0])
-
-        cells = table.add_row().cells
-        cells[0].text = 'Prime Sponsor:'
-        cells[1].text = str(row[15]) if row[15] is not None else ''
-        set_font(cells[0].paragraphs[0], is_left_column=True)
-        set_font(cells[1].paragraphs[0])
-
-        cells = table.add_row().cells
-        cells[0].text = 'Source of Support:'
-        cells[1].text = str(row[14]) if row[14] is not None else ''
-        set_font(cells[0].paragraphs[0], is_left_column=True)
-        set_font(cells[1].paragraphs[0])
-
-        cells = table.add_row().cells
-        cells[0].text = 'Primary Place of Performance:'
-        cells[1].text = str(row[19]) if row[19] is not None else ''
-        set_font(cells[0].paragraphs[0], is_left_column=True)
-        set_font(cells[1].paragraphs[0])
-
-        cells = table.add_row().cells
-        cells[0].text = 'Project/Proposal Start & End Date:'
-        cells[1].text = str(row[17]) if row[17] is not None else ''
-        set_font(cells[0].paragraphs[0], is_left_column=True)
-        set_font(cells[1].paragraphs[0])
-        #funding column
-        cells = table.add_row().cells
-        cells[0].text = 'Funding'
-        #will probably need some number handling here
+    #formats funding amount with dollar sign and two decimals. Handles error if the funding column has text
+    def currency_formatting(funding_column):
         try:
-            funding_float = float(str(row[18]) if row[18] is not None else '')        
-            cells[1].text = f'${funding_float:,.2f}'
+            funding_float = float(funding_column if funding_column is not None else '')
+            funding_text = f'${funding_float:,.2f}'
+            return funding_text
         except ValueError:
-            print(f"The Funding Number for {row[1]} is NOT text and says {row[18]}.\nEnter a number with no commas or $.")
+            print(f"The Funding Number is NOT text and says {funding_column}.\n Edit the Word file after saving or fix the Excel file and run this script again.")
+            funding_text  = '**** Incorrect Entry- Must be in format of ####.## ****'
+            return funding_text
+        
+
+    #concacts mini headings over yearly effort    
+    def person_month_formatting(effort_column):
+        person_month_text = "Year  Person Months (##.##)\n"  + str(effort_column if effort_column is not None else '')
+        return person_month_text
+
+
+    for row in rows:
             
-            cells[1].text = '**** Incorrect Entry- Must be in format of ####.## ****'
-
-        set_font(cells[0].paragraphs[0], is_left_column=True)
-        set_font(cells[1].paragraphs[0])
-
-        cells = table.add_row().cells
-        cells[0].text = '*Person Months:'
-        person_month_text = "Year  Person Months (##.##)\n"  + str(row[7]) if row[7] is not None else ''
-        cells[1].text = person_month_text
-        set_font(cells[0].paragraphs[0], is_left_column=True)
-        set_font(cells[1].paragraphs[0])
-
+        add_table_row(table, 'Title:', row[1])
+        add_table_row(table, 'Major Goals:', row[4])
+        add_table_row(table, 'Status of Support:', row[25], is_bold=True)
+        add_table_row(table, 'Project Number:', row[26])
+        add_table_row(table, 'Name of PD/PI:', row[13])
+        add_table_row(table, 'Prime Sponsor:', row[15])
+        add_table_row(table, 'Source of Support:', row[14])
+        add_table_row(table, 'Primary Place of Performance:', row[19])
+        add_table_row(table, 'Project/Proposal Start & End Date:', row[17])
+        add_table_row(table, 'Funding', currency_formatting(row[18]))
+        add_table_row(table, '*Person Months:', person_month_formatting(row[7]))
 
         # Add an empty row for spacing
         table.add_row()
@@ -226,8 +188,8 @@ save_path = save_file_dialog()
 try:
     document.save(save_path)
     print(f"Data has been exported to {save_path}")
-    input("Press Enter to continue...")
-    exit()
+    os.system('pause')
+   
 except PermissionError:
 
     print("ERROR: File is open, close the file and try again")
