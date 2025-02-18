@@ -104,9 +104,46 @@ def create_table(rows, table_title):
             run.font.size = Pt(10)
             if is_left_column:
                 run.bold = True
-    
-    for row in rows:
+
+    def add_table_row(table, label, value, is_bold=False):
         cells = table.add_row().cells
+        cells[0].text = label
+        cells[1].text = str(value) if value is not None else ''
+        set_font(cells[0].paragraphs[0], is_left_column=True)
+        set_font(cells[1].paragraphs[0])
+        if is_bold:
+            cells[1].paragraphs[0].runs[0].bold = True 
+    
+    def currency_formatting(funding_column):
+        try:
+            funding_float = float(funding_column if funding_column is not None else '')
+            funding_text = f'${funding_float:,.2f}'
+            return funding_text
+        except ValueError:
+            print(f"The Funding Number is NOT text and says {funding_column}.\nEnter a number with no commas or $.")
+            funding_text  = '**** Incorrect Entry- Must be in format of ####.## ****'
+            return funding_text
+        
+    def person_month_formatting(effort_column):
+        person_month_text = "Year  Person Months (##.##)\n"  + str(effort_column if effort_column is not None else '')
+        return person_month_text
+
+        
+    for row in rows:
+            
+        add_table_row(table, 'Title:', row[1])
+        add_table_row(table, 'Major Goals:', row[4])
+        add_table_row(table, 'Status of Support:', row[25], is_bold=True)
+        add_table_row(table, 'Project Number:', row[26])
+        add_table_row(table, 'Name of PD/PI:', row[13])
+        add_table_row(table, 'Prime Sponsor:', row[15])
+        add_table_row(table, 'Source of Support:', row[14])
+        add_table_row(table, 'Primary Place of Performance:', row[19])
+        add_table_row(table, 'Project/Proposal Start & End Date:', row[17])
+        add_table_row(table, 'Funding', currency_formatting(row[18]))
+        add_table_row(table, '*Person Months:', person_month_formatting(row[7]))
+
+        '''cells = table.add_row().cells
         cells[0].text = 'Title:'
         cells[1].text = str(row[1]) if row[1] is not None else ''
         set_font(cells[0].paragraphs[0], is_left_column=True)
@@ -181,7 +218,7 @@ def create_table(rows, table_title):
         person_month_text = "Year  Person Months (##.##)\n"  + str(row[7]) if row[7] is not None else ''
         cells[1].text = person_month_text
         set_font(cells[0].paragraphs[0], is_left_column=True)
-        set_font(cells[1].paragraphs[0])
+        set_font(cells[1].paragraphs[0])'''
 
 
         # Add an empty row for spacing
