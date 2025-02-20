@@ -227,6 +227,17 @@ document = create_document()
 # Create a table for projects
 create_table(document, current_projects, 'Awarded Projects')
 create_table(document, pending_projects, 'Pending Projects')
+# Create a table for projects
+
+if current_projects == []:
+    print("No current projects to show. Skipped")
+else:
+    create_table(document, current_projects, 'Current Projects')
+
+if pending_projects == []:
+    print("No pending projects to show. Skipped")
+else:
+    create_table(document, pending_projects, 'Pending Projects')
 
 # Create in kind page
 create_in_kind_page(document)
