@@ -237,6 +237,16 @@ def create_table(doc, projects, title, category):
 def create_document():
     # Create a new Word document
     document = Document()
+
+    def add_formatted_paragraph(cell, text, font_size=7.5, bold=False, bullet=False, indent=0):
+        paragraph = cell.add_paragraph(text, "List Bullet" if bullet else None)
+        paragraph.paragraph_format.left_indent = Inches(indent)
+        paragraph.paragraph_format.space_after = Pt(0)
+        paragraph.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
+        for run in paragraph.runs:
+            run.font.name = 'Times New Roman'
+            run.font.size = Pt(font_size)
+            run.bold = bold
     
     styles = document.styles
     style = styles.add_style('Plain Table 4', WD_STYLE_TYPE.TABLE)
@@ -281,89 +291,29 @@ def create_document():
     info_table = document.add_table(rows=2, cols=1)
     info_table.alignment = WD_TABLE_ALIGNMENT.CENTER
 
-    # Fill the first row with "Name"
-    
-    pi_text = sheet.cell(4,2).value
-    pi_name = pi_text.split(": ")[1]
-    cell= info_table.cell(0, 0)
-    
-    #cell.text = f"\nName: {pi_name}"
-    #run = cell.paragraphs[0].runs[0]
-    #run.bold = True
-    paragraph = cell.add_paragraph(f"Name: {pi_name}")
-    
-    for run in paragraph.runs:
-        run.font.name = 'Times New Roman'
-        run.font.size = Pt(10)
-        run.bold = True
-    
-    paragraph.paragraph_format.space_after = Pt(0)
-    paragraph.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
-    
-    
-    # Fill the second row with "Instructions"
-    sec_cell= info_table.cell(1, 0)
-    paragraph = sec_cell.add_paragraph()
+    # Name row
+    pi_name = sheet.cell(4,2).value.split(": ")[1]
+    add_formatted_paragraph(info_table.cell(0, 0), f"Name: {pi_name}", font_size=10, bold=True)
 
-    
-    run1 = paragraph.add_run("Instructions:\nWho completes this template:")
-    run1.bold =True
-    run3 = paragraph.add_run("Each project director/principal investigator (PD/PI) and other senior personnel that the Request for Applications (RFA) specifies. For FY 19 Agriculture and Food Research Initiative (AFRI) applications, completion of this is only required for PDs/PIs and CoPDs/CoPIs.\n")
-    run4 = paragraph.add_run("How this template is completed: ")
-    run4.bold = True
-    paragraph.paragraph_format.space_after = Pt(0)
-    paragraph.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
-    
-    for run in paragraph.runs:
-        run.font.name = 'Times New Roman'
-        run.font.size = Pt(7.5)
+    # Instructions row
+    sec_cell = info_table.cell(1, 0)
+   
+    add_formatted_paragraph(sec_cell, "Instructions:\nWho completes this template:", bold=True)
+    add_formatted_paragraph(sec_cell, "Each project director/principal investigator (PD/PI) and other senior personnel that the Request for Applications (RFA) specifies. For FY 19 Agriculture and Food Research Initiative (AFRI) applications, completion of this is only required for PDs/PIs and CoPDs/CoPIs.")
+    add_formatted_paragraph(sec_cell, "How this template is completed:", bold=True)
 
-    #paragraph = sec_cell.add_paragraph()
-    paragraph = sec_cell.add_paragraph("Record information for active and pending projects, including this proposal.", "List Bullet")
-    paragraph.paragraph_format.left_indent = Inches(0.5)
-    for run in paragraph.runs:
-        run.font.name = 'Times New Roman'
-        run.font.size = Pt(7.5)
-        
+    bullet_points = [
+        "Record information for active and pending projects, including this proposal.",
+        "All current efforts to which PD/PI(s) and other senior personnel have committed a portion of their time must be listed, whether or not salary for the person involved is included in the budgets of the various projects. For FY 17 AFRI applications, list only projects for which salary is requested.",
+        "Provide analogous information for all proposed work which is being considered by, or which will be submitted in the near future to, other possible sponsors, including other USDA programs.",
+        "For concurrent projects, the percent of time committed must not exceed 100%."
+    ]
 
-    paragraph = sec_cell.add_paragraph('All current efforts to which PD/PI(s) and other senior personnel have committed a portion of their time must be listed, whether or not salary for the person involved is included in the budgets of the various projects.  For FY 17 AFRI applications, list only projects for which salary is requested.', "List Bullet")
-    paragraph.paragraph_format.left_indent = Inches(0.5)  # Indent 0.5 inches from the left
- 
-    for run in paragraph.runs:
-        run.font.name = 'Times New Roman'
-        run.font.size = Pt(7.5)
+    for point in bullet_points:
+        add_formatted_paragraph(sec_cell, point, bullet=True, indent=0.5)
 
-    paragraph = sec_cell.add_paragraph("Provide analogous information for all proposed work which is being considered by, or which will be submitted in the near future to, other possible sponsors, including other USDA programs. ", "List Bullet")
-    paragraph.paragraph_format.left_indent = Inches(0.5)  # Indent 0.5 inches from the left
- 
-    for run in paragraph.runs:
-        run.font.name = 'Times New Roman'
-        run.font.size = Pt(7.5)
+    add_formatted_paragraph(sec_cell, "Note: Concurrent submission of a proposal to other organizations will not prejudice its review by NIFA.")
 
-    paragraph = sec_cell.add_paragraph("For concurrent projects, the percent of time committed must not exceed 100%.", "List Bullet")
-    paragraph.paragraph_format.left_indent = Inches(0.5)  # Indent 0.5 inches from the left
- 
-    for run in paragraph.runs:
-        run.font.name = 'Times New Roman'
-        run.font.size = Pt(7.5)
-
-    paragraph = sec_cell.add_paragraph("Note: Concurrent submission of a proposal to other organizations will not prejudice its review by NIFA.")
-    for run in paragraph.runs:
-        run.font.name = 'Times New Roman'
-        run.font.size = Pt(7.5)
-
-
-
-        '''Instructions:
-    Who completes this template: Each project director/principal investigator (PD/PI) and other senior personnel that the Request for Applications (RFA) specifies. For FY 19 Agriculture and Food Research Initiative (AFRI) applications, completion of this is only required for PDs/PIs and CoPDs/CoPIs.
-    How this template is completed: 
-    •	Record information for active and pending projects, including this proposal.  
-    •	All current efforts to which PD/PI(s) and other senior personnel have committed a portion of their time must be listed, whether or not salary for the person involved is included in the budgets of the various projects.  For FY 17 AFRI applications, list only projects for which salary is requested.
-    •	Provide analogous information for all proposed work which is being considered by, or which will be submitted in the near future to, other possible sponsors, including other USDA programs. 
-    •	For concurrent projects, the percent of time committed must not exceed 100%.
-
-    Note: Concurrent submission of a proposal to other organizations will not prejudice its review by NIFA.
-    '''
 
     # Get the second row of the info_table so you can set the border correctly
     second_row = info_table.rows[1]
