@@ -56,17 +56,7 @@ def save_file_error_handling(save_path):
         os.system('pause')
 
 def set_cell_border(cell, **kwargs):
-    """
-    Set cell border
-    Usage:
-    set_cell_border(
-        cell,
-        top={"sz": 12, "val": "single", "color": "#000000", "space": "0"},
-        bottom={"sz": 12, "val": "single", "color": "#000000", "space": "0"},
-        left={"sz": 12, "val": "single", "color": "#000000", "space": "0"},
-        right={"sz": 12, "val": "single", "color": "#000000", "space": "0"}
-    )
-    """
+
     tc = cell._tc
     tcPr = tc.get_or_add_tcPr()
 
@@ -79,8 +69,6 @@ def set_cell_border(cell, **kwargs):
 
         for key, value in attrs.items():
             border.set(qn(f'w:{key}'), str(value))
-
-
 
 # Load the Excel file
 #workbook = openpyxl.load_workbook(r'.venv\NIH C_P Olson Matther - Final.xlsx')
@@ -128,7 +116,6 @@ def create_table(doc, projects, title, category):
             print(f"The Funding Number is NOT text and says {funding_column}.\n Edit the Word file after saving or fix the Excel file and run this script again.")
             return '**** Incorrect Entry- Must be in format of ####.## ****'
             
-
     table = doc.add_table(rows=2, cols=6)
     table.autofit = False
     table.style = 'Plain Table 4'
@@ -233,17 +220,24 @@ def create_table(doc, projects, title, category):
         row_cells[4].text = str(time)
         row_cells[5].text = str(title)
 
+
+
+
     for row in table.rows:
         for cell in row.cells:
             for paragraph in cell.paragraphs:
                 paragraph.style = doc.styles['Normal']
                 paragraph.paragraph_format.space_after = Pt(0)
                 paragraph.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
+                paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                cell.width = Inches(1.12)
+
 
 
 def create_document():
     # Create a new Word document
     document = Document()
+    
     styles = document.styles
     style = styles.add_style('Plain Table 4', WD_STYLE_TYPE.TABLE)
     # style = document.styles['Normal'] to remove
@@ -255,7 +249,12 @@ def create_document():
     # Add a title to the document
   
     # Add a table with 1 row and 1 column
-    header_table = document.add_table(rows=1, cols=1)    
+    header_table = document.add_table(rows=1, cols=1) 
+    header_table.alignment = WD_TABLE_ALIGNMENT.CENTER   
+    header_table.autofit = False
+    for column in header_table.columns:
+        for cell in column.cells:
+            cell.width = Inches(6.7) 
 
     # Get the cell and add the text
     cell = header_table.cell(0, 0)
@@ -279,23 +278,92 @@ def create_document():
     font.size = Pt(14)
     font.bold = True
 
-    document.add_paragraph()
-
     info_table = document.add_table(rows=2, cols=1)
+    info_table.alignment = WD_TABLE_ALIGNMENT.CENTER
 
     # Fill the first row with "Name"
+    
     pi_text = sheet.cell(4,2).value
     pi_name = pi_text.split(": ")[1]
     cell= info_table.cell(0, 0)
-    cell.text = f"Name: {pi_name}"
-    run = cell.paragraphs[0].runs[0]
-    run.bold=True
-
-
+    
+    #cell.text = f"\nName: {pi_name}"
+    #run = cell.paragraphs[0].runs[0]
+    #run.bold = True
+    paragraph = cell.add_paragraph(f"Name: {pi_name}")
+    
+    for run in paragraph.runs:
+        run.font.name = 'Times New Roman'
+        run.font.size = Pt(10)
+        run.bold = True
+    
+    paragraph.paragraph_format.space_after = Pt(0)
+    paragraph.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
+    
+    
     # Fill the second row with "Instructions"
     sec_cell= info_table.cell(1, 0)
+    paragraph = sec_cell.add_paragraph()
+
+    
+    run1 = paragraph.add_run("Instructions:\nWho completes this template:")
+    run1.bold =True
+    run3 = paragraph.add_run("Each project director/principal investigator (PD/PI) and other senior personnel that the Request for Applications (RFA) specifies. For FY 19 Agriculture and Food Research Initiative (AFRI) applications, completion of this is only required for PDs/PIs and CoPDs/CoPIs.\n")
+    run4 = paragraph.add_run("How this template is completed: ")
+    run4.bold = True
+    paragraph.paragraph_format.space_after = Pt(0)
+    paragraph.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
+    
+    for run in paragraph.runs:
+        run.font.name = 'Times New Roman'
+        run.font.size = Pt(7.5)
+
+    #paragraph = sec_cell.add_paragraph()
+    paragraph = sec_cell.add_paragraph("Record information for active and pending projects, including this proposal.", "List Bullet")
+    paragraph.paragraph_format.left_indent = Inches(0.5)
+    for run in paragraph.runs:
+        run.font.name = 'Times New Roman'
+        run.font.size = Pt(7.5)
+        
+
+    paragraph = sec_cell.add_paragraph('All current efforts to which PD/PI(s) and other senior personnel have committed a portion of their time must be listed, whether or not salary for the person involved is included in the budgets of the various projects.  For FY 17 AFRI applications, list only projects for which salary is requested.', "List Bullet")
+    paragraph.paragraph_format.left_indent = Inches(0.5)  # Indent 0.5 inches from the left
  
-    sec_cell.text = "Instruct"
+    for run in paragraph.runs:
+        run.font.name = 'Times New Roman'
+        run.font.size = Pt(7.5)
+
+    paragraph = sec_cell.add_paragraph("Provide analogous information for all proposed work which is being considered by, or which will be submitted in the near future to, other possible sponsors, including other USDA programs. ", "List Bullet")
+    paragraph.paragraph_format.left_indent = Inches(0.5)  # Indent 0.5 inches from the left
+ 
+    for run in paragraph.runs:
+        run.font.name = 'Times New Roman'
+        run.font.size = Pt(7.5)
+
+    paragraph = sec_cell.add_paragraph("For concurrent projects, the percent of time committed must not exceed 100%.", "List Bullet")
+    paragraph.paragraph_format.left_indent = Inches(0.5)  # Indent 0.5 inches from the left
+ 
+    for run in paragraph.runs:
+        run.font.name = 'Times New Roman'
+        run.font.size = Pt(7.5)
+
+    paragraph = sec_cell.add_paragraph("Note: Concurrent submission of a proposal to other organizations will not prejudice its review by NIFA.")
+    for run in paragraph.runs:
+        run.font.name = 'Times New Roman'
+        run.font.size = Pt(7.5)
+
+
+
+        '''Instructions:
+    Who completes this template: Each project director/principal investigator (PD/PI) and other senior personnel that the Request for Applications (RFA) specifies. For FY 19 Agriculture and Food Research Initiative (AFRI) applications, completion of this is only required for PDs/PIs and CoPDs/CoPIs.
+    How this template is completed: 
+    •	Record information for active and pending projects, including this proposal.  
+    •	All current efforts to which PD/PI(s) and other senior personnel have committed a portion of their time must be listed, whether or not salary for the person involved is included in the budgets of the various projects.  For FY 17 AFRI applications, list only projects for which salary is requested.
+    •	Provide analogous information for all proposed work which is being considered by, or which will be submitted in the near future to, other possible sponsors, including other USDA programs. 
+    •	For concurrent projects, the percent of time committed must not exceed 100%.
+
+    Note: Concurrent submission of a proposal to other organizations will not prejudice its review by NIFA.
+    '''
 
     # Get the second row of the info_table so you can set the border correctly
     second_row = info_table.rows[1]
@@ -304,9 +372,10 @@ def create_document():
     for cell in second_row.cells:
         set_cell_border(
             cell,
-            top={"sz": 4, "val": "single", "color": "#000000", "space": "0"}
+            top={"sz": 4, "val": "single", "color": "#000000", "space": "0"},
+            bottom={"sz": 4, "val": "single", "color": "#000000", "space": "0"}
         )
-
+    paragraph = document.add_paragraph()
     return document
 
 # Create Word document and add tables
