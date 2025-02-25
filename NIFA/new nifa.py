@@ -334,5 +334,11 @@ create_table(doc, active_projects, 'Active Projects', 'Active')
 #doc.add_page_break()
 create_table(doc, pending_projects, 'Pending Projects', 'Pending')
 
+paragraph = doc.add_paragraph("\nAs an addendum to the Current and Pending Support, provide a brief summary below for any completed, current, or pending projects that appear similar to the current application, especially previous National Research Initiative (NRI) or AFRI awards:  None")
+
+for run in paragraph.runs:
+        run.font.name = 'Times New Roman'
+        run.font.size = Pt(11.5)
+
 # Save the Word document
 save_file()
