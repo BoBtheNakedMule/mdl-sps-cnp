@@ -83,17 +83,30 @@ def create_table(document, rows, table_title):
             cells[1].paragraphs[0].runs[0].bold = True 
     
     #formats funding amount with dollar sign and two decimals. Handles error if the funding column has text
-    def currency_formatting(funding_column):
+    def currency_formatting(funding_column,row):
         try:
             funding_float = float(funding_column if funding_column is not None else '')
             return f'${funding_float:,.2f}'
         except ValueError:
-            print(f"The Funding Number is NOT text and says {funding_column}.\n Edit the Word file after saving or fix the Excel file and run this script again.")
+            print(f"The Funding Number is NOT text and says {funding_column} for title: {row}.\nEdit the Word file after saving or fix the Excel file and run this script again.")
             return '**** Incorrect Entry- Must be in format of ####.## ****'
 
     #concacts mini headings over yearly effort    
-    def person_month_formatting(effort_column):
-       return "Year  Person Months (##.##)\n"  + str(effort_column if effort_column is not None else '')
+    def effort_check (effort_column,row):
+       if effort_column is None:
+            print(f"The effort column cannot be blank.\nCheck your document for the Title: {row} and review.")
+            print("No File Saved")
+            os.system(command="pause")
+            exit()
+        
+        
+    def blank_funding_period(date_column, row):
+        if date_column is None:
+            print(f"The Performance Period column cannot be blank.\nCheck your document for the Title: {row} and review.")
+            print("No File Saved")
+            os.system(command="pause")
+            exit()
+           
 
     title_formatting = document.add_paragraph()
     run = title_formatting.add_run(table_title)
@@ -125,14 +138,14 @@ def create_table(document, rows, table_title):
     for row in rows:
         add_table_row(table, 'Title:', row[1])
         add_table_row(table, 'PI:', row[13])
-        add_table_row(table, 'Time Commitments:', row[30])
+        add_table_row(table, 'Time Commitments:', effort_check(row[30],row[1]))
         add_table_row(table, 'Agency:', row[14])
         add_table_row(table, 'Agency Address:', row[20])
         add_table_row(table, "Agency's Contact/Contracting Grants Office:", row[5])
-        add_table_row(table, 'Performance Period:', row[17])
-        add_table_row(table, 'Funding', currency_formatting(row[18]))
+        add_table_row(table, 'Performance Period:', blank_funding_period(row[17], row[1]))
+        add_table_row(table, 'Funding', currency_formatting(row[18], row[1]))
         add_table_row(table, 'Objectives:', row[4])
-        add_table_row(table, 'Overlap:', row[6])
+        add_table_row(table, 'Overlap:', f'{row[6]}\n')
 
     # Add an empty row for spacing
     table.add_row()
@@ -230,16 +243,19 @@ if completed_projects == []:
     print("No completed projects to show. Skipped")
 else:
     create_table(document, completed_projects, 'Completed Projects')
+    paragraph = document.add_paragraph()
 
 if current_projects == []:
     print("No current projects to show. Skipped")
 else:
     create_table(document, current_projects, 'Current Projects')
+    paragraph = document.add_paragraph()
 
 if pending_projects == []:
     print("No pending projects to show. Skipped")
 else:
     create_table(document, pending_projects, 'Pending Projects')
+    paragraph = document.add_paragraph()
 
 # Create in kind page
 create_in_kind_page(document)
