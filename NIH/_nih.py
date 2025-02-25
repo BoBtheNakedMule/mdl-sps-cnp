@@ -90,10 +90,24 @@ def create_table(document, rows, table_title):
         except ValueError:
             print(f"The Funding Number is NOT text and says {funding_column}.\n Edit the Word file after saving or fix the Excel file and run this script again.")
             return '**** Incorrect Entry- Must be in format of ####.## ****'
+        
+    def blank_funding_period(date_column, row):
+        if date_column is None:
+            print(f"The Proposal Start and End column cannot be blank.\nCheck your document for the Title: {row} and review.")
+            print("No File Saved")
+            os.system(command="pause")
+            exit()
+       
 
     #concacts mini headings over yearly effort    
-    def person_month_formatting(effort_column):
-       return "Year  Person Months (##.##)\n"  + str(effort_column if effort_column is not None else '')
+    def person_month_formatting(effort_column, row):
+       if effort_column is None:
+            print(f"The effort column cannot be blank.\nCheck your document for the Title: {row} and review.")
+            print("No File Saved")
+            os.system(command="pause")
+            exit()
+       else:   
+            return "Year  Person Months (##.##)\n"  + str(effort_column if effort_column is not None else '')
 
     title_formatting = document.add_paragraph()
     run = title_formatting.add_run(table_title)
@@ -131,9 +145,9 @@ def create_table(document, rows, table_title):
         add_table_row(table, 'Prime Sponsor:', row[15])
         add_table_row(table, 'Source of Support:', row[14])
         add_table_row(table, 'Primary Place of Performance:', row[19])
-        add_table_row(table, 'Project/Proposal Start & End Date:', row[17])
+        add_table_row(table, 'Project/Proposal Start & End Date:', blank_funding_period(row[17], row[1]))
         add_table_row(table, 'Funding', currency_formatting(row[18]))
-        add_table_row(table, '*Person Months:', person_month_formatting(row[7]))
+        add_table_row(table, '*Person Months:', person_month_formatting(row[7],row[1]))
 
     # Add an empty row for spacing
     table.add_row()
@@ -233,11 +247,13 @@ if current_projects == []:
     print("No current projects to show. Skipped")
 else:
     create_table(document, current_projects, 'Current Projects')
+    paragraph = document.add_paragraph()
 
 if pending_projects == []:
     print("No pending projects to show. Skipped")
 else:
     create_table(document, pending_projects, 'Pending Projects')
+    paragraph = document.add_paragraph()
 
 # Create in kind page
 create_in_kind_page(document)
