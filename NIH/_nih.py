@@ -91,23 +91,26 @@ def create_table(document, rows, table_title):
             print(f"The Funding Number is NOT text and says {funding_column}.\n Edit the Word file after saving or fix the Excel file and run this script again.")
             return '**** Incorrect Entry- Must be in format of ####.## ****'
         
-    def blank_funding_period(date_column, row):
-        if date_column is None:
-            print(f"The Proposal Start and End column cannot be blank.\nCheck your document for the Title: {row} and review.")
+    def blank_other_check(column, label):
+        if column is None:
+            print(f"Something is blank that shouldn't be, check {label} column")
             print("No File Saved")
             os.system(command="pause")
             exit()
+        else:
+            return column
        
 
     #concacts mini headings over yearly effort    
-    def person_month_formatting(effort_column, row):
+    def person_month_formatting(effort_column, label):
        if effort_column is None:
-            print(f"The effort column cannot be blank.\nCheck your document for the Title: {row} and review.")
+            print(f"The effort column cannot be blank.\nCheck the {label} column and review.")
             print("No File Saved")
             os.system(command="pause")
             exit()
        else:   
-            return "Year  Person Months (##.##)\n"  + str(effort_column if effort_column is not None else '')
+            return f"Year  Person Months (##.##)\n{effort_column}\n"
+       
 
     title_formatting = document.add_paragraph()
     run = title_formatting.add_run(table_title)
@@ -137,17 +140,17 @@ def create_table(document, rows, table_title):
                 paragraph.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
 
     for row in rows:
-        add_table_row(table, 'Title:', row[1])
-        add_table_row(table, 'Major Goals:', row[4])
+        add_table_row(table, 'Title:', blank_other_check(row[1], "Title"))
+        add_table_row(table, 'Major Goals:', blank_other_check(row[4], "Goals"))
         add_table_row(table, 'Status of Support:', row[25], is_bold=True)
         add_table_row(table, 'Project Number:', row[26])
-        add_table_row(table, 'Name of PD/PI:', row[13])
+        add_table_row(table, 'Name of PD/PI:', blank_other_check(row[13], "PI Name"))
         add_table_row(table, 'Prime Sponsor:', row[15])
-        add_table_row(table, 'Source of Support:', row[14])
-        add_table_row(table, 'Primary Place of Performance:', row[19])
-        add_table_row(table, 'Project/Proposal Start & End Date:', blank_funding_period(row[17], row[1]))
+        add_table_row(table, 'Source of Support:', blank_other_check(row[14], "Sponsor Name"))
+        add_table_row(table, 'Primary Place of Performance:', blank_other_check(row[19], "Location"))
+        add_table_row(table, 'Project/Proposal Start & End Date:', blank_other_check(row[17], "Project Period"))
         add_table_row(table, 'Funding', currency_formatting(row[18]))
-        add_table_row(table, '*Person Months:', person_month_formatting(row[7],row[1]))
+        add_table_row(table, '*Person Months:', person_month_formatting(row[7],"Person Months"))
 
     # Add an empty row for spacing
     table.add_row()
