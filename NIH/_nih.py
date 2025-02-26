@@ -1,4 +1,4 @@
-#pyinstaller .venv\nih.py --onefile
+#pyinstaller .venv\_nih.py --onefile
 import os
 import openpyxl
 from docx import Document
@@ -109,7 +109,8 @@ def create_table(document, rows, table_title):
             os.system(command="pause")
             exit()
        else:   
-            return f"Year  Person Months (##.##)\n{effort_column}\n"
+            effort_formatted = f"Year  Person Months (##.##)\n{effort_column}\n"
+            return effort_formatted
        
 
     title_formatting = document.add_paragraph()
