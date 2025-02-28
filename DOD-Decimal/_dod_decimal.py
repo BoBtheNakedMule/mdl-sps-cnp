@@ -1,4 +1,4 @@
-#pyinstaller .venv\nih.py --onefile
+#pyinstaller .venv\_dod_decimal.py --onefile
 import os
 import openpyxl
 from docx import Document
@@ -106,8 +106,10 @@ def create_table(document, rows, table_title):
             os.system(command="pause")
             exit()
         elif column is not None and label == "Overlap":
-            overlap_column = f"{column}\n"
+            overlap_column = f"{column}\n\n"
             return overlap_column
+        else:
+            return column
         
             
 
@@ -148,13 +150,13 @@ def create_table(document, rows, table_title):
                 paragraph.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
 
     for row in rows:
-        add_table_row(table, 'Title:', row[1])
+        add_table_row(table, 'Title:', blank_other_check(row[1], "Title"))
         add_table_row(table, 'PI:', blank_other_check(row[13], "PI Name"))
         add_table_row(table, 'Time Commitments:', blank_other_check(row[30],"DOD Time Commitment"))
-        add_table_row(table, 'Agency:', row[14])
+        add_table_row(table, 'Agency:', blank_other_check(row[14], "Sponsor Name"))
         add_table_row(table, 'Agency Address:', row[20])
         add_table_row(table, "Agency's Contact/Contracting Grants Office:", row[5])
-        add_table_row(table, 'Performance Period:', blank_funding_period(row[17], row[1]))
+        add_table_row(table, 'Performance Period:', blank_other_check(row[17], 'Project Period'))
         add_table_row(table, 'Funding', currency_formatting(row[18], row[1]))
         add_table_row(table, 'Objectives:', blank_other_check(row[4], "Goals"))
         add_table_row(table, 'Overlap:', blank_other_check(row[6], "Overlap"))
