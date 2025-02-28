@@ -1,3 +1,4 @@
+#pyinstaller .venv\_nifa.py --onefile
 import openpyxl
 from docx import Document
 from docx.shared import Inches, Pt
@@ -346,6 +347,8 @@ doc = create_document()
 create_table(doc, active_projects, 'Active Projects', 'Active')
 #doc.add_page_break()
 create_table(doc, pending_projects, 'Pending Projects', 'Pending')
+
+paragraph = doc.add_paragraph("Something", "List Bullet")
 
 # Save the Word document
 save_file()
