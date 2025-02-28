@@ -1,4 +1,4 @@
-#pyinstaller .venv\nih.py --onefile
+#pyinstaller .venv\_dod_percent.py --onefile
 import os
 import openpyxl
 from docx import Document
@@ -90,14 +90,6 @@ def create_table(document, rows, table_title):
         except ValueError:
             print(f"The Funding Number is NOT text and says {funding_column} for title: {row}.\nEdit the Word file after saving or fix the Excel file and run this script again.")
             return '**** Incorrect Entry- Must be in format of ####.## ****'
-
-    #concacts mini headings over yearly effort    
-    def effort_check (effort_column,label):
-       if effort_column is None:
-            print(f"The effort column cannot be blank.\nCheck your document for {label} column and review.")
-            print("No File Saved")
-            os.system(command="pause")
-            exit()
             
     def blank_other_check(column, label):
         if column is None:
@@ -106,18 +98,11 @@ def create_table(document, rows, table_title):
             os.system(command="pause")
             exit()
         elif column is not None and label == "Overlap":
-            overlap_column = f"{column}\n"
+            overlap_column = f"{column}\n\n"
             return overlap_column
+        else:
+            return column
         
-            
-
-        
-    def blank_funding_period(date_column, row):
-        if date_column is None:
-            print(f"The Performance Period column cannot be blank.\nCheck your document for the Title: {row} and review.")
-            print("No File Saved")
-            os.system(command="pause")
-            exit()
            
 
     title_formatting = document.add_paragraph()
@@ -148,13 +133,13 @@ def create_table(document, rows, table_title):
                 paragraph.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
 
     for row in rows:
-        add_table_row(table, 'Title:', row[1])
+        add_table_row(table, 'Title:', blank_other_check(row[1], "Title"))
         add_table_row(table, 'PI:', blank_other_check(row[13], "PI Name"))
-        add_table_row(table, 'Time Commitments:', blank_other_check(row[30],"DOD Time Commitment"))
-        add_table_row(table, 'Agency:', row[14])
+        add_table_row(table, 'Time Commitments:', blank_other_check(row[29],"DARPA Time Commitment"))
+        add_table_row(table, 'Agency:', blank_other_check(row[14], "Sponsor Name"))
         add_table_row(table, 'Agency Address:', row[20])
         add_table_row(table, "Agency's Contact/Contracting Grants Office:", row[5])
-        add_table_row(table, 'Performance Period:', blank_funding_period(row[17], row[1]))
+        add_table_row(table, 'Performance Period:', blank_other_check(row[17], "Project Period"))
         add_table_row(table, 'Funding', currency_formatting(row[18], row[1]))
         add_table_row(table, 'Objectives:', blank_other_check(row[4], "Goals"))
         add_table_row(table, 'Overlap:', blank_other_check(row[6], "Overlap"))
