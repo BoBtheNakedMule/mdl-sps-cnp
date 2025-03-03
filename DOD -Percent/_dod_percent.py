@@ -17,7 +17,7 @@ def open_file():
     file_path = filedialog.askopenfilename(
         filetypes=[("Excel files", "*.xlsx")],
         defaultextension=".xlsx",
-        #Add default directory for K drive
+        #Add default directory for K drive and title
     )
 
     if not file_path:
