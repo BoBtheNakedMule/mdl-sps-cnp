@@ -17,6 +17,7 @@ def open_file():
     file_path = filedialog.askopenfilename(
         filetypes=[("Excel files", "*.xlsx")],
         defaultextension=".docx"
+        #Add default directory for K drive and title
     )
 
     if not file_path:
@@ -27,7 +28,7 @@ def open_file():
 # Save File Prompt
 def save_file():
     save_path = filedialog.asksaveasfilename(
-        filetypes=[("Word files", "*.docx")]
+        filetypes=[("Word files", "*.docx")] #need to set Initialdir and title
     )
     
     if not save_path:
@@ -73,6 +74,7 @@ def create_table(document, rows, table_title):
             if is_left_column:
                 run.bold = True
 
+    #Adds row to table and formats the text as needed
     def add_table_row(table, label, value, is_bold=False):
         cells = table.add_row().cells
         cells[0].text = label
@@ -98,7 +100,8 @@ def create_table(document, rows, table_title):
             print("No File Saved")
             os.system(command="pause")
             exit()
-            
+
+    #Error checking to ensure other columns don't have blank spaces in needed rows.            
     def blank_other_check(column, label):
         if column is None:
             print(f"Something is blank that shouldn't be, check {label} column")
@@ -122,12 +125,14 @@ def create_table(document, rows, table_title):
             exit()
            
 
+    #Ensures the document header is the correct color, size, etc., regardless of style settings.
     title_formatting = document.add_paragraph()
     run = title_formatting.add_run(table_title)
     run.font.color.rgb = RGBColor(0,0,0)
     run.font.size = Pt(14)
     run.bold = True
-    #document.add_heading(table_title, level=1) to remove
+    
+    #creates top two rows
     table = document.add_table(rows=1, cols=2)
     table.autofit = True
     table.style = 'Plain Table 4'
@@ -142,6 +147,7 @@ def create_table(document, rows, table_title):
     table.columns[1].cells[0]._element.tcPr.tcW.type = 'pct'
     table.columns[1].cells[0]._element.tcPr.tcW.w = 3750  # 75% of 5000
 
+    #more text formatting and ensuring lines are single spaced
     for row in table.rows:
         for cell in row.cells:
             for paragraph in cell.paragraphs:
@@ -149,6 +155,7 @@ def create_table(document, rows, table_title):
                 paragraph.paragraph_format.space_after = Pt(0)
                 paragraph.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
 
+    #Add a block of rows for each completed, current or pending proposal
     for row in rows:
         add_table_row(table, 'Title:', blank_other_check(row[1], "Title"))
         add_table_row(table, 'PI:', blank_other_check(row[13], "PI Name"))
@@ -164,6 +171,7 @@ def create_table(document, rows, table_title):
     # Add an empty row for spacing
     table.add_row()
 
+#pulls data from spreadsheet and puts it into a list for use by create_table
 def fill_projects(sheet, starting_row, category_column, status, get_values_only=True):
     projects = []
 
@@ -173,6 +181,7 @@ def fill_projects(sheet, starting_row, category_column, status, get_values_only=
     
     return projects
 
+# creates paragraph above table
 def create_document():
     # Create a new Word document
     document = Document()
@@ -185,7 +194,6 @@ def create_document():
     style.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
 
     # Add a title to the document
-    #document.add_heading('NIH Current and Pending Report', 0) to remove
     pi_name = sheet.cell(4,2).value
     try:
         if pi_name[:4] != "Name":
@@ -211,6 +219,7 @@ def create_document():
 
     return document
 
+#creates paragraphs below tables
 def create_in_kind_page(document):
     #add page break before In-Kind
     document.add_page_break()
