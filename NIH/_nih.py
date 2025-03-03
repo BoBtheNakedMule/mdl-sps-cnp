@@ -14,7 +14,7 @@ from tkinter import filedialog
 def open_file():
     root = tk.Tk()
     root.withdraw()  # Hide the main window
-    file_path = filedialog.askopenfilename(
+    file_path = filedialog.askopenfilename(#set title and initialdir
         filetypes=[("Excel files", "*.xlsx")],
         defaultextension=".xlsx"
     )
@@ -26,7 +26,7 @@ def open_file():
 
 # Save File Prompt
 def save_file():
-    save_path = filedialog.asksaveasfilename(
+    save_path = filedialog.asksaveasfilename(#set title and initialdir
         filetypes=[("Word files", "*.docx")]
     )
     
@@ -63,7 +63,7 @@ def create_column_dict(worksheet, row):
         index+=1
     return column_dict
 
-
+#pulls data from spreadsheet and puts it into a list for use by create_table
 def fill_projects(sheet, starting_row, category_column, status, get_values_only=True):
     projects = []
 
@@ -84,6 +84,7 @@ def create_table(document, rows, table_title):
             if is_left_column:
                 run.bold = True
 
+    #adjusts formatting on text in table depending on whether it needs bolded or not -specifically the Status
     def add_table_row(table, label, value, is_bold=False):
         cells = table.add_row().cells
         cells[0].text = label
@@ -101,7 +102,8 @@ def create_table(document, rows, table_title):
         except ValueError:
             print(f"The Funding Number is NOT text and says {funding_column}.\n Edit the Word file after saving or fix the Excel file and run this script again.")
             return '**** Incorrect Entry- Must be in format of ####.## ****'
-        
+
+    #error checking to ensure other columns don't have blank spaces in needed rows     
     def blank_other_check(column, label):
         if column is None:
             print(f"Something is blank that shouldn't be, check {label} column")
@@ -123,7 +125,7 @@ def create_table(document, rows, table_title):
             effort_formatted = f"Year  Person Months (##.##)\n{effort_column}\n"
             return effort_formatted
        
-
+    #ensures the document header has the correct formatting
     title_formatting = document.add_paragraph()
     run = title_formatting.add_run(table_title)
     run.font.color.rgb = RGBColor(0,0,0)
@@ -144,6 +146,7 @@ def create_table(document, rows, table_title):
     table.columns[1].cells[0]._element.tcPr.tcW.type = 'pct'
     table.columns[1].cells[0]._element.tcPr.tcW.w = 3750  # 75% of 5000
 
+    #more text formatting
     for row in table.rows:
         for cell in row.cells:
             for paragraph in cell.paragraphs:
@@ -151,6 +154,7 @@ def create_table(document, rows, table_title):
                 paragraph.paragraph_format.space_after = Pt(0)
                 paragraph.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
 
+    #adds block of rows for each proposal that is Current or Pending
     for row in rows:
         add_table_row(table, 'Title:', blank_other_check(row[1], "Title"))
         add_table_row(table, 'Major Goals:', blank_other_check(row[4], "Goals"))
@@ -167,7 +171,7 @@ def create_table(document, rows, table_title):
     # Add an empty row for spacing
     table.add_row()
 
-
+#creates document and the top paragraphs
 def create_document():
     # Create a new Word document
     document = Document()
@@ -206,6 +210,7 @@ def create_document():
 
     return document
 
+#creates the paragraphs below the tables
 def create_in_kind_page(document):
     #add page break before In-Kind
     document.add_page_break()
