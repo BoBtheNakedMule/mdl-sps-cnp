@@ -16,7 +16,7 @@ def open_file():
     root.withdraw()  # Hide the main window
     file_path = filedialog.askopenfilename(
         filetypes=[("Excel files", "*.xlsx")],
-        defaultextension=".docx"
+        defaultextension=".xlsx"
     )
 
     if not file_path:
@@ -62,6 +62,17 @@ def create_column_dict(worksheet, row):
         column_dict[cell.value] = index
         index+=1
     return column_dict
+
+
+def fill_projects(sheet, starting_row, category_column, status, get_values_only=True):
+    projects = []
+
+    for row in sheet.iter_rows(min_row=starting_row, values_only=get_values_only):
+        if row[category_column] == status:
+            projects.append(row)
+    
+    return projects
+
 
 # Function to create a table
 def create_table(document, rows, table_title):
@@ -156,14 +167,6 @@ def create_table(document, rows, table_title):
     # Add an empty row for spacing
     table.add_row()
 
-def fill_projects(sheet, starting_row, category_column, status, get_values_only=True):
-    projects = []
-
-    for row in sheet.iter_rows(min_row=starting_row, values_only=get_values_only):
-        if row[category_column] == status:
-            projects.append(row)
-    
-    return projects
 
 def create_document():
     # Create a new Word document
