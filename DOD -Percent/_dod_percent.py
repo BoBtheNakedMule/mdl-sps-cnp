@@ -73,6 +73,7 @@ def create_table(document, rows, table_title):
             run.font.size = Pt(10)
             if is_left_column:
                 run.bold = True
+   
     #Adds row to table and formats the text as needed
     def add_table_row(table, label, value, is_bold=False):
         cells = table.add_row().cells
@@ -174,7 +175,6 @@ def create_document():
     style.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
 
     # Add a title to the document
-    #document.add_heading('NIH Current and Pending Report', 0) to remove
     pi_name = sheet.cell(4,2).value
     try:
         if pi_name[:4] != "Name":
