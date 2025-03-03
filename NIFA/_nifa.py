@@ -22,7 +22,7 @@ import os
 def open_file():
     root = tk.Tk()
     root.withdraw()  # Hide the main window
-    file_path = filedialog.askopenfilename(
+    file_path = filedialog.askopenfilename( #add initialdir and title
         filetypes=[("Excel files", "*.xlsx")],
         defaultextension=".docx"
     )
@@ -34,7 +34,7 @@ def open_file():
 
 # Save File Prompt
 def save_file():
-    save_path = filedialog.asksaveasfilename(
+    save_path = filedialog.asksaveasfilename(#add initialdir and title
         filetypes=[("Word files", "*.docx")]
     )
     
@@ -60,6 +60,7 @@ def save_file_error_handling(save_path):
         print("ERROR: File is open, close the file and try again")
         os.system('pause')
 
+#function to handle the unusual borders on the main table
 def set_cell_border(cell, **kwargs):
 
     tc = cell._tc
@@ -120,7 +121,8 @@ def create_table(doc, projects, title, category):
         except ValueError:
             print(f"The Funding Number is NOT text and says {funding_column}.\n Edit the Word file after saving or fix the Excel file and run this script again.")
             return '**** Incorrect Entry- Must be in format of ####.## ****'
-        
+    
+    #Error checking to ensure other columns don't have blank spaces in needed rows.    
     def other_column_blank(data, label):
         if data is not None:
             return data
