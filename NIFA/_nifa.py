@@ -22,25 +22,35 @@ import os
 def open_file():
     root = tk.Tk()
     root.withdraw()  # Hide the main window
-    file_path = filedialog.askopenfilename( #add initialdir and title
+    file_path = filedialog.askopenfilename(
         filetypes=[("Excel files", "*.xlsx")],
-        defaultextension=".docx"
+        defaultextension=".docx",
+        title="SPS Current and Pending -NIFA",
+        initialdir=r"K:\_DeptAll\PreAward\3. Administrative\Faculty Documents - CPs\Faculty Current & Pending"
     )
 
     if not file_path:
         print("No File Selected")
+        os.system="pause"
+        exit()
     else:
-        return openpyxl.load_workbook(file_path)
+        workbook_file_path = os.path.basename(file_path)
+        return openpyxl.load_workbook(file_path), workbook_file_path
 
 # Save File Prompt
-def save_file():
-    save_path = filedialog.asksaveasfilename(#add initialdir and title
-        filetypes=[("Word files", "*.docx")]
+def save_file(workbook_file_path):
+    workbook_file_path = os.path.splitext(workbook_file_path)[0]
+    save_path = filedialog.asksaveasfilename(
+        filetypes=[("Word files", "*.docx")],
+        title="SPS Current and Pending NIFA",
+        initialdir=r"K:\_DeptAll\PreAward\3. Administrative\Faculty Documents - CPs\Faculty Current & Pending",
+        initialfile=f"{workbook_file_path}.docx"
     )
     
     if not save_path:
         print("No File Saved")
         os.system('pause')
+        exit()
 
     # Check if the file has a .docx extension, if not, add it
     elif not save_path.lower().endswith('.docx'):
@@ -76,9 +86,17 @@ def set_cell_border(cell, **kwargs):
         for key, value in attrs.items():
             border.set(qn(f'w:{key}'), str(value))
 
+
+# Main code
+version = "SPS-NIH-20250303"
+print(20 * "*")
+print(f"Version: {version}")
+print("When reporting issues, please provide this version number")
+print(20 * "*")
+
 # Load the Excel file
 #workbook = openpyxl.load_workbook(r'.venv\NIH C_P Olson Matther - Final.xlsx')
-workbook = open_file()
+workbook, workbook_file_path = open_file()
 sheet = workbook['C&P']
 
 # Get the headers from row 40
@@ -353,4 +371,4 @@ create_table(doc, pending_projects, 'Pending Projects', 'Pending')
 paragraph = doc.add_paragraph("Something", "List Bullet")
 
 # Save the Word document
-save_file()
+save_file(workbook_file_path)
