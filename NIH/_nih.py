@@ -14,25 +14,35 @@ from tkinter import filedialog
 def open_file():
     root = tk.Tk()
     root.withdraw()  # Hide the main window
-    file_path = filedialog.askopenfilename(#set title and initialdir
+    file_path = filedialog.askopenfilename(
         filetypes=[("Excel files", "*.xlsx")],
-        defaultextension=".xlsx"
+        defaultextension=".docx",
+        title="SPS Current and Pending -NIH",
+        initialdir=r"K:\_DeptAll\PreAward\3. Administrative\Faculty Documents - CPs\Faculty Current & Pending"
     )
 
     if not file_path:
         print("No File Selected")
+        os.system="pause"
+        exit()
     else:
-        return openpyxl.load_workbook(file_path)
+        workbook_file_path = os.path.basename(file_path)
+        return openpyxl.load_workbook(file_path), workbook_file_path
 
 # Save File Prompt
-def save_file():
-    save_path = filedialog.asksaveasfilename(#set title and initialdir
-        filetypes=[("Word files", "*.docx")]
+def save_file(workbook_file_path):
+    workbook_file_path = os.path.splitext(workbook_file_path)[0]
+    save_path = filedialog.asksaveasfilename(
+        filetypes=[("Word files", "*.docx")],
+        title="SPS Current and Pending NIFA",
+        initialdir=r"K:\_DeptAll\PreAward\3. Administrative\Faculty Documents - CPs\Faculty Current & Pending",
+        initialfile=f"{workbook_file_path}.docx"
     )
     
     if not save_path:
         print("No File Saved")
         os.system('pause')
+        exit()
 
     # Check if the file has a .docx extension, if not, add it
     elif not save_path.lower().endswith('.docx'):
@@ -228,8 +238,13 @@ def create_in_kind_page(document):
     document.add_paragraph("Date: ")
 
 # Main code
+version = "SPS-NIH-20250303"
+print(10 * "*")
+print(f"Version: {version}")
+print("When reporting issues, please provide this version number")
+print(10 * "*")
 # Load the Excel workbook
-workbook = open_file()
+workbook, workbook_file_path = open_file()
 
 # Select the 'C&P' sheet
 sheet = workbook['C&P']
@@ -271,4 +286,4 @@ else:
 create_in_kind_page(document)
 
 # Save the file
-save_file()
+save_file(workbook_file_path)
