@@ -10,19 +10,19 @@ import tkinter as tk
 from tkinter import filedialog
 
 filename = ''
-
+v_effort_format_check = ''
 
 # Open File Prompt
 def open_file():
     root = tk.Tk()
     root.withdraw()  # Hide the main window
+    root.attributes('-topmost', True)
     file_path = filedialog.askopenfilename(
         filetypes=[("Excel files", "*.xlsx")],
-        defaultextension=".docx",
-        title="SPS Current and Pending -DOD",
-        initialdir=r"K:\_DeptAll\PreAward\3. Administrative\Faculty Documents - CPs\Faculty Current & Pending"
+        defaultextension=".xlsx",
+        #initialdir=r"K:\_DeptAll\PreAward\3. Administrative\Faculty Documents - CPs\Faculty Current & Pending",
+        title="SPS Current and Pending"
     )
-
     if not file_path:
         print("No File Selected")
         os.system="pause"
@@ -30,14 +30,16 @@ def open_file():
     else:
         workbook_file_path = os.path.basename(file_path)
         return openpyxl.load_workbook(file_path), workbook_file_path
+    
+    #root.withdraw()  # Hide the main window
 
 # Save File Prompt
 def save_file(workbook_file_path):
     workbook_file_path = os.path.splitext(workbook_file_path)[0]
     save_path = filedialog.asksaveasfilename(
         filetypes=[("Word files", "*.docx")],
-        title="SPS Current and Pending -DOD",
-        initialdir=r"K:\_DeptAll\PreAward\3. Administrative\Faculty Documents - CPs\Faculty Current & Pending",
+        title="SPS Current and Pending",
+        #initialdir=r"K:\_DeptAll\PreAward\3. Administrative\Faculty Documents - CPs\Faculty Current & Pending",
         initialfile=f"{workbook_file_path}.docx"
     )
     
@@ -64,8 +66,6 @@ def save_file_error_handling(save_path):
         print("ERROR: File is open, close the file and try again")
         os.system('pause')
 
-
-
 # Create a dictionary of column names and their corresponding column index
 def create_column_dict(worksheet, row):
     column_dict = {}
@@ -76,29 +76,18 @@ def create_column_dict(worksheet, row):
     return column_dict
 
 def effort_format_check():
-    input_check = False
-    sponsor_type= input("Did you need effort displayed as Decimal (D) or Percent (P)? ").lower()
-    while input_check == False:
-        if sponsor_type == 'd' :          
-            input_check = True
-            break
-            
-             
-        elif sponsor_type == 'p':
-            input_check = True
-            
-            break
-            
+    print("DARPA typically needs effort shown as Percent but some PIs want percent for non-DARPA Current & Pending")
+    while True:
+        sponsor_type= input("Did you need effort displayed as Decimal (D) or Percent (P)? ").lower()
+        if sponsor_type in ['p', 'd']:
+            return sponsor_type                          
         else:
             print("*" * 20)
             print("INVALID ENTRY")
-            sponsor_type = input("Please enter 'D' for Decimal or 'P' for Percent ").lower()
-            input_check = False
-        return sponsor_type
-        
+       
 
 # Function to create a table
-def create_table(document, rows, table_title, v_effort_format_check):
+def create_table(document, rows, table_title, effort_type):
 
     # Function to set font for a paragraph
     def set_font(paragraph, is_left_column=False):
@@ -127,14 +116,6 @@ def create_table(document, rows, table_title, v_effort_format_check):
             print(f"The Funding Number is NOT text and says {funding_column} for title: {row}.\nEdit the Word file after saving or fix the Excel file and run this script again.")
             return '**** Incorrect Entry- Must be in format of ####.## ****'
 
-    #concacts mini headings over yearly effort    
-    def effort_check (effort_column,label):
-       if effort_column is None:
-            print(f"The effort column cannot be blank.\nCheck your document for {label} column and review.")
-            print("No File Saved")
-            os.system(command="pause")
-            exit()
-
     #Error checking to ensure other columns don't have blank spaces in needed rows.            
     def blank_other_check(column, label):
         if column is None:
@@ -147,9 +128,6 @@ def create_table(document, rows, table_title, v_effort_format_check):
             return overlap_column
         else:
             return column
-        
-
-           
 
     #Ensures the document header is the correct color, size, etc., regardless of style settings.
     title_formatting = document.add_paragraph()
@@ -185,8 +163,8 @@ def create_table(document, rows, table_title, v_effort_format_check):
     for row in rows:
         add_table_row(table, 'Title:', blank_other_check(row[1], "Title"))
         add_table_row(table, 'PI:', blank_other_check(row[13], "PI Name"))
-        add_table_row(table, 'Time Commitments:', blank_other_check(row[29],"DARPA Time Commitment"))
-        if v_effort_format_check == 'p':
+        #add_table_row(table, 'Time Commitments:', blank_other_check(row[29],"DARPA Time Commitment"))
+        if effort_type == 'p':
             add_table_row(table, 'Time Commitments:', blank_other_check(row[29],"DARPA Time Commitment"))
         else:
             add_table_row(table, 'Time Commitments:', blank_other_check(row[30],"DOD Time Commitment"))
@@ -252,26 +230,34 @@ def create_document():
 #creates paragraphs below tables
 def create_in_kind_page(document):
     #add page break before In-Kind
-    document.add_page_break()
+    need_inkind = input("Did you need an In-Kind section? 'Y' or 'N' ").lower()
+    if need_inkind == 'y':
+        document.add_page_break()
 
-    in_kind_top = document.add_paragraph()
-    in_kind_top.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = in_kind_top.add_run("\n\nIn-Kind")
-    run.font.size = Pt(14)
-    run.bold = True
+        in_kind_top = document.add_paragraph()
+        in_kind_top.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run = in_kind_top.add_run("\n\nIn-Kind")
+        run.font.size = Pt(14)
+        run.bold = True
 
-    document.add_paragraph(
-    f'\n\nSummary of In-Kind Contribution: None\n*Status of Support: \n *Source of Support: \n Project/Proposal Start & End Date: (MM/YY)\n*Person Months (Calendar, Academic, Summer) per budget period:\n\n*Estimated Dollar Value of In-Kind Information:\n\n *Overlap (summarized for each individual)\n\n')
-    document.add_paragraph(f'I, PD/PI or other senior/key personnel, certify that the statements herein are true, complete, and accurate to the best of my knowledge, and accept the obligation to complete with Public Health Services terms and conditions if a grant is awarded as a result of this application. I am aware that any false, fictitious or fradulent statements or claims may subject me to criminal, civil, or administrative penalties.')
-    document.add_paragraph("*Signature:")
-    document.add_paragraph("Date: ")
+        document.add_paragraph(
+        f'\n\nSummary of In-Kind Contribution: None\n*Status of Support: \n *Source of Support: \n Project/Proposal Start & End Date: (MM/YY)\n*Person Months (Calendar, Academic, Summer) per budget period:\n\n*Estimated Dollar Value of In-Kind Information:\n\n *Overlap (summarized for each individual)\n\n')
+        document.add_paragraph(f'I, PD/PI or other senior/key personnel, certify that the statements herein are true, complete, and accurate to the best of my knowledge, and accept the obligation to complete with Public Health Services terms and conditions if a grant is awarded as a result of this application. I am aware that any false, fictitious or fradulent statements or claims may subject me to criminal, civil, or administrative penalties.')
+        document.add_paragraph("*Signature:")
+        document.add_paragraph("Date: ")
+    else:
+        print("You did not select Y so no In-Kind section was added.")
 
 # Main code
-version = "SPS-DOD-20250324"
+version = "SPS-DOD-20250325"
 print(20 * "*")
 print(f"Version: {version}")
 print("When reporting issues, please provide this version number")
 print(20 * "*")
+
+v_effort_format_check = effort_format_check()
+print(f"It is {v_effort_format_check}")
+
 # Load the Excel workbook
 workbook, workbook_file_path = open_file()
 
@@ -281,36 +267,32 @@ sheet = workbook['C&P']
 # Get headers from row 40 on the spreadsheet
 headers = create_column_dict(sheet, 40)
 
-v_effort_format_check = effort_format_check()
-
 try:
     category_column = headers['AFOSR/DARPA/DOD Category'] #set the department's category
 except KeyError:
     print("Your category header has been changed -check to make sure it is properly spelled with no extra spaces")
     os.system(command="pause")
     exit()
+
 # Create lists to store current and pending projects starting with row 41
 completed_projects = fill_projects(sheet, 41, category_column, 'Completed')
 current_projects = fill_projects(sheet, 41, category_column, 'Current')
 pending_projects = fill_projects(sheet, 41, category_column, 'Pending')
 
-
 # Create a new Word document
 document = create_document()
-
-
 
 # Create a table for projects
 if completed_projects == []:
     print("No completed projects to show. Skipped")
 else:
-    create_table(document, completed_projects, 'Completed Projects', v_effort_format_check)
+    create_table(document, completed_projects, 'Completed Projects', v_effort_format_check )
     paragraph = document.add_paragraph()
 
 if current_projects == []:
     print("No current projects to show. Skipped")
 else:
-    create_table(document, current_projects, 'Current Projects', v_effort_format_check)
+    create_table(document, current_projects, 'Current Projects', v_effort_format_check )
     paragraph = document.add_paragraph()
 
 if pending_projects == []:
@@ -320,7 +302,6 @@ else:
     paragraph = document.add_paragraph()
 
 # Create in kind page
-
 create_in_kind_page(document)
 
 # Save the file
