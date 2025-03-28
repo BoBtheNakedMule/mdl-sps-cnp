@@ -1,41 +1,54 @@
+#pyinstaller C:\SPS_python\.venv\Marshall\_nasa_v3.py --onefile
+
 import shutil
 import docx
 import os
+from sys import exit
 import shutil
 import openpyxl
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor
-from docx.enum.style import WD_STYLE_TYPE
-from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_COLOR_INDEX, WD_LINE_SPACING, WD_BREAK
+from docx.enum.text import WD_COLOR_INDEX, WD_LINE_SPACING
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 import tkinter as tk
 from tkinter import filedialog
-
+import userpaths
 
 # Open File Prompt
 def open_file():
     root = tk.Tk()
     root.withdraw()  # Hide the main window
+    root.attributes('-topmost', True) #brings save dialog to the top
     file_path = filedialog.askopenfilename(
         filetypes=[("Excel files", "*.xlsx")],
-        defaultextension=".docx"
+        defaultextension=".xlsx",
+        title="SPS Current and Pending -NASA",
+        initialdir=r"K:\_DeptAll\PreAward\3. Administrative\Faculty Documents - CPs\Faculty Current & Pending"
     )
+
     if not file_path:
         print("No File Selected")
+        os.system="pause"
+        exit()
     else:
-        return openpyxl.load_workbook(file_path)
+        workbook_file_path = os.path.basename(file_path)
+        return openpyxl.load_workbook(file_path), workbook_file_path
 
 # Save File Prompt
-def save_file():
+def save_file(workbook_file_path):
+    workbook_file_path = os.path.splitext(workbook_file_path)[0]
     save_path = filedialog.asksaveasfilename(
-        filetypes=[("Word files", "*.docx")]
+        filetypes=[("Word files", "*.docx")],
+        title="SPS Current and Pending NASA",
+        initialdir=r"K:\_DeptAll\PreAward\3. Administrative\Faculty Documents - CPs\Faculty Current & Pending",
+        initialfile=f"{workbook_file_path}.docx"
     )
     
     if not save_path:
         print("No File Saved")
         os.system('pause')
-        #do I need to add exit to here?
+        exit()
 
     # Check if the file has a .docx extension, if not, add it
     elif not save_path.lower().endswith('.docx'):
@@ -50,13 +63,11 @@ def save_file_error_handling(save_path):
         doc.save(save_path)
         print(f"Data has been exported to {save_path}")
         os.system('pause')
-        #do I need to add exit to here?
 
     except PermissionError:
         print("ERROR: File is open, close the file and try again")
         os.system('pause')
-        #do I need to add exit to here?
-        
+
 
 # Create a dictionary of column names and their corresponding column index
 def create_column_dict(worksheet, row):
@@ -203,7 +214,7 @@ def create_table(document, rows, table_title, insert_paragraph=None):
         add_table_row(table, 'Status of Support:', blank_other_check(row[36], "NASA Category"))
         add_table_row(table, 'Proposal/Award Number:', row[16])
         add_table_row(table, 'Source of Support:', blank_other_check(row[14], "Sponsor Name"))
-        add_table_row(table, 'Primary Place of Performance:', blank_other_check(row[20], "Sponsor Address"))
+        add_table_row(table, 'Primary Place of Performance:', blank_other_check(row[19], "Location"))
         add_table_row(table, 'Performance Period:', blank_other_check(row[17], 'Project Period'))
         add_table_row(table, 'Funding', currency_formatting(row[18], row[1]))
         add_table_row(table, 'Person Months:', blank_other_check(row[7],"Person Months"))       
@@ -228,10 +239,18 @@ def apply_paragraph_formatting(paragraph):
         run.font.size = Pt(12)
 
 
-# Load the Excel workbook
-workbook = open_file()
+
+# Main code
+version = "SPS-NASA-20250328"
+print(20 * "*")
+print(f"Version: {version}")
+print("When reporting issues, please provide this version number")
+print("\nBe sure to enter the ID Number and Position Title within this file\n")
+
+print(20 * "*")
 
 # Select the 'C&P' sheet
+workbook, workbook_file_path = open_file()
 sheet = workbook['C&P']
 
 # Get headers from row 40 on the spreadsheet
@@ -249,10 +268,14 @@ except KeyError:
 current_projects = fill_projects(sheet, 41, category_column, 'Current')
 pending_projects = fill_projects(sheet, 41, category_column, 'Pending')
 
-new_file = r".venv\temp.docx"
+
+get_dl = userpaths.get_downloads()
+file_name = "temp.docx"
+new_file = f'{get_dl}\\{file_name}'
+
 
 # Copy the original file
-shutil.copy2(r".venv\current-and-pending-support-cps-form.docx", new_file)
+shutil.copy2(r"K:\_DeptAll\SUPPORT\Administrative\Roles\Operations Manager\Current and Pendings\NASA Template\current-and-pending-support-cps-form.docx", new_file)
 
 # Open the copied document
 doc = docx.Document(new_file)
@@ -399,4 +422,4 @@ for index in reversed(paragraphs_to_remove):
 
 
 # Save the modified document
-save_file()
+save_file(workbook_file_path)
