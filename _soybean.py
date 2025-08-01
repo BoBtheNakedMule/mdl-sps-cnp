@@ -153,44 +153,53 @@ def create_table(doc, projects, title, category):
             exit() 
             
     table = doc.add_table(rows=2, cols=6)
-    table.autofit = False
+    table.autofit = True
     table.style = 'Plain Table 4'
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
 
     # Set custom borders for all cells
+     
+    n_rows = len(table.rows)
+    n_cols = len(table.columns)
     for i, row in enumerate(table.rows):
         for j, cell in enumerate(row.cells):
-            # Remove left border for all cells
-            set_cell_border(
-                cell,
-                left={"sz": 0, "val": "double", "color": "#000000", "space": "0"}
-            )
-            
-            # Add right border for all cells except the last column
-            if j < len(row.cells) - 1:
+            # Top border
+            if i == 0:
                 set_cell_border(
-                    cell,
-                    right={"sz": 4, "val": "double", "color": "#000000", "space": "0"}
+                    cell, top={"sz": 8, "val": "double", "color": "000000", "space": "0"}
                 )
             else:
                 set_cell_border(
-                    cell,
-                    right={"sz": 0, "val": "single", "color": "#000000", "space": "0"}
+                    cell, top={"sz": 4, "val": "single", "color": "000000", "space": "0"}
                 )
-            
-            # Keep the existing top and bottom border logic
-            if i < 2:
+            # Bottom border
+            if i == n_rows - 1:
                 set_cell_border(
-                    cell,
-                    top={"sz": 4, "val": "single", "color": "#000000", "space": "0"},
-                    bottom={"sz": 4, "val": "single", "color": "#000000", "space": "0"}
+                    cell, bottom={"sz": 8, "val": "double", "color": "000000", "space": "0"}
                 )
             else:
                 set_cell_border(
-                    cell,
-                    top={"sz": 0, "val": "single", "color": "#000000", "space": "0"},
-                    bottom={"sz": 0, "val": "single", "color": "#000000", "space": "0"}
+                    cell, bottom={"sz": 4, "val": "single", "color": "000000", "space": "0"}
                 )
+            # Left border
+            if j == 0:
+                set_cell_border(
+                    cell, left={"sz": 8, "val": "double", "color": "000000", "space": "0"}
+                )
+            else:
+                set_cell_border(
+                    cell, left={"sz": 4, "val": "single", "color": "000000", "space": "0"}
+                )
+            # Right border
+            if j == n_cols - 1:
+                set_cell_border(
+                    cell, right={"sz": 8, "val": "double", "color": "000000", "space": "0"}
+                )
+            else:
+                set_cell_border(
+                    cell, right={"sz": 4, "val": "single", "color": "000000", "space": "0"}
+                )
+ 
     
     # Set header row
     hdr_cells = table.rows[0].cells
@@ -204,8 +213,8 @@ def create_table(doc, projects, title, category):
     
     # Set category row
     category_cells = table.rows[1].cells
-    category_cells[0].text = f"{category}\n"
-    for i in range(1, 6):
+    category_cells[1].text = f"{category}\n"
+    for i in range(2, 6):
         category_cells[i].text = ""
     
     # Make the category row bold
@@ -294,6 +303,9 @@ def create_table(doc, projects, title, category):
 def create_document():
     # Create a new Word document
     document = Document()
+    section = document.sections[0]
+    section.orientation = 1
+    section.page_width, section.page_height = section.page_height, section.page_width
 
     def add_formatted_paragraph(cell, text, font_size=12, bold=False, bullet=False, indent=0):
         paragraph = cell.add_paragraph(text, "List Number" if bullet else None)
@@ -314,11 +326,19 @@ def create_document():
     style.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
 
     # Add a title to the document
-  
+ 
+    topline = document.add_paragraph()
+    run = topline.add_run("CURRENT AND PENDING RESEARCH SUPPORT DISCLOUSRE")
+    run.bold = True
+    second_text = document.add_paragraph()
+    run = second_text.add_run("FY 2026 Research Grant Application")  
+    topline.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    second_text.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
     # Add a table with 1 row and 1 column
     header_table = document.add_table(rows=1, cols=1) 
     header_table.alignment = WD_TABLE_ALIGNMENT.CENTER   
-    header_table.autofit = False
+    header_table.autofit = True
     '''for column in header_table.columns:
         for cell in column.cells:
             cell.width = Inches(6.7) '''
@@ -326,8 +346,8 @@ def create_document():
     # Get the cell and add the text
     cell = header_table.cell(0, 0)
     paragraph = cell.paragraphs[0]
-    run = paragraph.add_run("\nCURRENT AND PENDING RESEARCH SUPPORT DISCLOUSRE")
-    run = paragraph.add_run("\nFY 2026 Reserch Grant Application")
+    #run = paragraph.add_run("\nCURRENT AND PENDING RESEARCH SUPPORT DISCLOUSRE")
+    #run = paragraph.add_run("\nFY 2026 Reserch Grant Application")
 
     set_cell_border(
                     cell,
@@ -369,18 +389,19 @@ def create_document():
 
 
     # Get the second row of the info_table so you can set the border correctly
-    second_row = info_table.rows[0]
+    #second_row = info_table.rows[0]
 
     # Add top border to each cell in the second row
-    for cell in second_row.cells:
+
+    '''for cell in second_row.cells:
         set_cell_border(
             cell,
             top={"sz": 4, "val": "none", "color": "#FFFFFF", "space": "0"},
             left={"sz": 4, "val": "double", "color": "#FFFFFF", "space": "0"},
             right={"sz": 4, "val": "none", "color": "#FFFFFF", "space": "0"},
             bottom={"sz": 4, "val": "none", "color": "#FFFFFF", "space": "0"}
-        )
-    #paragraph = document.add_paragraph()
+        )'''
+
     return document
 
 # Create Word document and add tables
