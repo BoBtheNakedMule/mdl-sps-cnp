@@ -1,4 +1,4 @@
-#pyinstaller C:\SPS_python\.venv\Marshall\_soybean.py --onefile
+
 import openpyxl
 from docx import Document
 from docx.shared import Inches, Pt
@@ -269,7 +269,22 @@ def create_document():
     style.paragraph_format.space_after = Pt(0)
     style.paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
 
-    # Add a title to the document
+    #Check for removed rows
+
+    pi_name = sheet.cell(4,2).value
+    try:
+        if pi_name[:4] != "Name":
+            print("There appears to be an issue with the top of the worksheet -No Name Found")
+            print("Review the worksheet and ensure the instructions at the top are intact.")
+            print("No File Saved")
+            os.system(command="pause")
+            exit()
+    except TypeError:
+        print("There appears to be an issue with the top of the worksheet -No Name Found")
+        print("Review the worksheet and ensure the instructions at the top are intact.")
+        print("No File Saved")
+        os.system(command="pause")
+        exit()
  
     topline = document.add_paragraph()
     run = topline.add_run("CURRENT AND PENDING RESEARCH SUPPORT DISCLOUSRE")
