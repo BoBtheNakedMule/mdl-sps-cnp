@@ -319,7 +319,7 @@ else:
 
 # Add PID 
 pid_paragraph = doc.add_paragraph()
-run = pid_paragraph.add_run("Persistent Identifier (PID of the Senior/Key Person):")
+run = pid_paragraph.add_run("Persistent Identifier (PID of the Senior/Key Person): ")
 pid_paragraph.runs[0].bold = True
 run = pid_paragraph.add_run(f"{pi_pid}\n")
 apply_paragraph_formatting(pid_paragraph)

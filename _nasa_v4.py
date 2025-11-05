@@ -237,11 +237,11 @@ def apply_paragraph_formatting(paragraph):
         run.font.size = Pt(12)
 
 # Main code
-version = "SPS-NASA-20250328"
+version = "SPS-NASA-20251105"
 print(20 * "*")
 print(f"Version: {version}")
 print("When reporting issues, please provide this version number")
-print("\nBe sure to enter the ID Number and Position Title within this file\n")
+#print("\nBe sure to enter the ID Number and Position Title within this file\n")
 
 print(20 * "*")
 
