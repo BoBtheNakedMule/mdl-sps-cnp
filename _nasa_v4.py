@@ -13,7 +13,7 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 import tkinter as tk
 from tkinter import filedialog
-
+import userpaths
 
 # Open File Prompt
 def open_file():
@@ -130,7 +130,7 @@ def add_hyperlink(paragraph, url, text):
     paragraph._element.append(hyperlink)
 
 # Function to create a table
-def create_table(document, rows, table_title):
+def create_table(document, rows, table_title, insert_paragraph=None):
     
     # Function to set font for a paragraph
     def set_font(paragraph, is_left_column=False):
@@ -184,11 +184,11 @@ def create_table(document, rows, table_title):
     #table.style = 'Plain Table 4'
 
     #handles inserting tables into NASA Doc only
-    '''if insert_paragraph:
+    if insert_paragraph:
         insert_paragraph._element.addnext(table._element)
     else:
         document.add_paragraph()  # Add an empty paragraph for spacing
-        document.add_table(table)'''
+        document.add_table(table)
 
     #Set the width of the left column to 25%
     table.columns[0].width = Inches(1.5)
@@ -237,13 +237,11 @@ def apply_paragraph_formatting(paragraph):
         run.font.size = Pt(12)
 
 # Main code
-version = "SPS-Common-Form 20251105"
+version = "SPS-NASA-20250328"
 print(20 * "*")
 print(f"Version: {version}")
 print("When reporting issues, please provide this version number")
-#print("\nBe sure to enter the ID Number within this file\n")
-
-print("\nNote: this program uses the NASA related columns in the spreadsheet.")
+print("\nBe sure to enter the ID Number and Position Title within this file\n")
 
 print(20 * "*")
 
@@ -267,128 +265,174 @@ current_projects = fill_projects(sheet, 41, category_column, 'Current')
 pending_projects = fill_projects(sheet, 41, category_column, 'Pending')
 
 
+get_dl = userpaths.get_downloads()
+file_name = "temp.docx"
+new_file = f'{get_dl}\\{file_name}'
 
+
+# Copy the original file
+shutil.copy2(r"K:\_DeptAll\SUPPORT\Administrative\Roles\Operations Manager\Current and Pendings\NASA Template\current-and-pending-support-cps-form.docx", new_file)
 
 # Open the copied document
-doc = docx.Document()
+doc = docx.Document(new_file)
 
-
+# Flag to track if we're in a section to be removed
+remove_section = False
+end_index = None
 
 # Iterate through paragraphs and look for !-Start and !-End and remove any paragraphs between them.
-
+paragraphs_to_remove = []
+for i, para in enumerate(doc.paragraphs):
+    if "!-Start" in para.text:
+        remove_section = True
+        paragraphs_to_remove.append(i)
+    elif "!-End" in para.text:
+        remove_section = False
+        end_index = i
+        # Don't add !-End to paragraphs_to_remove
+    elif remove_section:
+        paragraphs_to_remove.append(i)
 
 #TODO remove repeating code
 
+if end_index is not None:
+    # Insert tables at the position of "!-End"
+    paragraph = doc.paragraphs[end_index]
+    
+    # Create the "hello world" paragraph
+if end_index is not None:
+    # Insert tables at the position of "!-End"
+    paragraph = doc.paragraphs[end_index]
+    
+    # Add Identifying Information
+    hello_paragraph = paragraph.insert_paragraph_before("Identifying Information\n")
+    
+    hello_paragraph.runs[0].bold = True
+    hello_paragraph.runs[0].underline = True
+    apply_paragraph_formatting(hello_paragraph)
+
+
     # Add PI Name
-pi_name = sheet.cell(4,2).value
-try:
-    if pi_name[:4] != "Name":
+    pi_name = sheet.cell(4,2).value
+    try:
+        if pi_name[:4] != "Name":
+            print("There appears to be an issue with the top of the worksheet -No Name Found")
+            print("Review the worksheet and ensure the instructions at the top are intact.")
+            print("No File Saved")
+            os.system(command="pause")
+            exit()
+    except TypeError:
         print("There appears to be an issue with the top of the worksheet -No Name Found")
         print("Review the worksheet and ensure the instructions at the top are intact.")
         print("No File Saved")
         os.system(command="pause")
         exit()
-except TypeError:
-    print("There appears to be an issue with the top of the worksheet -No Name Found")
-    print("Review the worksheet and ensure the instructions at the top are intact.")
-    print("No File Saved")
+
+    name_paragraph = paragraph.insert_paragraph_before()
+    run = name_paragraph.add_run("*")
+    run.bold = True
+    run.font.color.rgb = RGBColor(255,0,0)
+    run = name_paragraph.add_run("Name: ")
+    run.bold = True
+    run = name_paragraph.add_run(f'{pi_name[19:]}\n')
+    apply_paragraph_formatting(name_paragraph)
+
+    #Extract PID from A36
+    a36_value = sheet['A36'].value
+    # Extract text after the first colon, stripping any leading/trailing spaces
+    if a36_value and ":" in a36_value:
+        pi_pid = a36_value.split(":", 1)[1].strip()
+        if pi_pid:
+            print(f"The PI's PID is {pi_pid}")
+        else:
+            print("No PID Entered -Please enter the PID manually")
+    else:
+        print("Colon not found before PID")
+
+    # Add PID
+    pid_paragraph = paragraph.insert_paragraph_before()
+    run = pid_paragraph.add_run("Persistent Identifier (PID of the Senior/Key Person): ")
+    pid_paragraph.runs[0].bold = True
+    run = pid_paragraph.add_run(f"{pi_pid}\n")
+
+    apply_paragraph_formatting(pid_paragraph)
+
+    #Extract Position Title from B5
+    cell_b5_value = sheet['B5'].value
+    if cell_b5_value and "Title: " in cell_b5_value and " Start Date:" in cell_b5_value:
+        start_index = cell_b5_value.find("Title: ") + len("Title: ")
+        end_index = cell_b5_value.find(" Start Date:")
+        pi_title = cell_b5_value[start_index:end_index].strip()
+    else:
+        pi_title = ""  # or handle the case as needed
+        print("There appears to be a problem with the position title, please add it manually to the document.")
+
+    # Add Position Title
+    position_paragraph = paragraph.insert_paragraph_before()
+    run = position_paragraph.add_run("*")
+    run.bold = True 
+    run.font.color.rgb = RGBColor(255,0,0)
+    run = position_paragraph.add_run("Position Title: ")
+    run.bold = True
+    run = position_paragraph.add_run(f"{pi_title}\n")
+    #run.font.highlight_color = WD_COLOR_INDEX.YELLOW
+    apply_paragraph_formatting(position_paragraph)
+
+    # Add Organization and Location
+    org_paragraph = paragraph.insert_paragraph_before("Organization and Location\n")
+    org_paragraph.runs[0].bold = True
+    org_paragraph.runs[0].underline = True
+    apply_paragraph_formatting(org_paragraph)
+
+    univ_paragraph = paragraph.insert_paragraph_before()
+    run = univ_paragraph.add_run("*")
+    run.font.color.rgb = RGBColor(255,0,0)
+    run.bold = True
+    run = univ_paragraph.add_run("Name: Purdue University\n")
+    run.bold = True
+    apply_paragraph_formatting(univ_paragraph)
+
+    loc_paragraph = paragraph.insert_paragraph_before()
+    run = loc_paragraph.add_run("*")
+    run.font.color.rgb = RGBColor(255,0,0)
+    run.bold = True
+    run = loc_paragraph.add_run("Location: West Lafayette, Indiana, United States\n")
+    run.bold = True
+    apply_paragraph_formatting(loc_paragraph)
+
+    # Add Proposals and Active Proposals
+    prop_paragraph = paragraph.insert_paragraph_before("a.  Proposals and Active Proposals\n")
+    prop_paragraph.runs[0].bold = True
+    prop_paragraph.runs[0].underline = True
+    apply_paragraph_formatting(prop_paragraph)
+
+    # Add disclosure paragraph
+    disc_paragraph = paragraph.insert_paragraph_before("In this section, disclose ALL proposals and active projects in accordance with the definition for ")
+    add_hyperlink(disc_paragraph, "http://nsf.gov/bfa/dias/policy/researchprotection/nspm33definitions.pdf", "current and pending (other) support")
+    apply_paragraph_formatting(disc_paragraph)
+    
+    if current_projects:
+        create_table(doc, current_projects, '', paragraph)
+        doc.add_paragraph()
+    
+    if pending_projects:
+        create_table(doc, pending_projects, '', paragraph)
+    
+    # Remove the "!-End" paragraph
+    paragraph._element.getparent().remove(paragraph._element)
+    
+    # If no "!-End" is found, add error message
+else:
+    ##Do not place tables
+    print("There is a problem with the NASA Template. Contact Support and reference 'No !-End Marker is Found'")
+    print("No File is saved")
     os.system(command="pause")
     exit()
 
-name_paragraph = doc.add_paragraph()
-run = name_paragraph.add_run("*")
-run.bold = True
-run.font.color.rgb = RGBColor(255,0,0)
-run = name_paragraph.add_run("Name: ")
-run.bold = True
-run = name_paragraph.add_run(f'{pi_name[19:]}\n')
-apply_paragraph_formatting(name_paragraph)
-
-#Extract PID from A36
-a36_value = sheet['A36'].value
-# Extract text after the first colon, stripping any leading/trailing spaces
-if a36_value and ":" in a36_value:
-    pi_pid = a36_value.split(":", 1)[1].strip()
-    if pi_pid:
-        print(f"The PI's PID is {pi_pid}")
-    else:
-        print("No PID Entered -Please enter the PID manually")
-else:
-    print("Colon not found before PID")
-
-
-# Add PID 
-pid_paragraph = doc.add_paragraph()
-run = pid_paragraph.add_run("Persistent Identifier (PID of the Senior/Key Person):")
-pid_paragraph.runs[0].bold = True
-run = pid_paragraph.add_run(f"{pi_pid}\n")
-apply_paragraph_formatting(pid_paragraph)
-
-#Extract Position Title from B5
-cell_b5_value = sheet['B5'].value
-if cell_b5_value and "Title: " in cell_b5_value and " Start Date:" in cell_b5_value:
-    start_index = cell_b5_value.find("Title: ") + len("Title: ")
-    end_index = cell_b5_value.find(" Start Date:")
-    pi_title = cell_b5_value[start_index:end_index].strip()
-else:
-    pi_title = ""  # or handle the case as needed
-    print("There appears to be a problem with the position title, please add it manually to the document.")
-
-
-# Add Position Title
-position_paragraph = doc.add_paragraph()
-run = position_paragraph.add_run("*")
-run.bold = True 
-run.font.color.rgb = RGBColor(255,0,0)
-run = position_paragraph.add_run("Position Title: ")
-run.bold = True
-run = position_paragraph.add_run(f"{pi_title}\n")
-apply_paragraph_formatting(position_paragraph)
-
-# Add Organization and Location
-org_paragraph = doc.add_paragraph("Organization and Location\n")
-org_paragraph.runs[0].bold = True
-org_paragraph.runs[0].underline = True
-apply_paragraph_formatting(org_paragraph)
-
-univ_paragraph = doc.add_paragraph()
-run = univ_paragraph.add_run("*")
-run.font.color.rgb = RGBColor(255,0,0)
-run.bold = True
-run = univ_paragraph.add_run("Name: Purdue University\n")
-run.bold = True
-apply_paragraph_formatting(univ_paragraph)
-
-loc_paragraph = doc.add_paragraph()
-run = loc_paragraph.add_run("*")
-run.font.color.rgb = RGBColor(255,0,0)
-run.bold = True
-run = loc_paragraph.add_run("Location: West Lafayette, Indiana, United States\n")
-run.bold = True
-apply_paragraph_formatting(loc_paragraph)
-
-# Add Proposals and Active Proposals
-prop_paragraph = doc.add_paragraph("a.  Proposals and Active Proposals\n")
-prop_paragraph.runs[0].bold = True
-prop_paragraph.runs[0].underline = True
-apply_paragraph_formatting(prop_paragraph)
-
-# Add disclosure paragraph
-disc_paragraph = doc.add_paragraph("In this section, disclose ALL proposals and active projects in accordance with the definition for ")
-add_hyperlink(disc_paragraph, "http://nsf.gov/bfa/dias/policy/researchprotection/nspm33definitions.pdf", "current and pending (other) support")
-apply_paragraph_formatting(disc_paragraph)
-
-if current_projects:
-    create_table(doc, current_projects, '')
-    doc.add_paragraph()
-
-if pending_projects:
-    create_table(doc, pending_projects, '')
-
-
-    
-  
-
+# Then remove paragraphs
+for index in reversed(paragraphs_to_remove):
+    p = doc.paragraphs[index]
+    p._element.getparent().remove(p._element)
 
 # Save the modified document
 save_file(workbook_file_path)
